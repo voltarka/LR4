@@ -1,71 +1,107 @@
 #include <iostream>
 #include <ctime>
 #include <vector>
-#include <iomanip>
-#include <algorithm>
+using namespace std;
 
-void swap(int& a,int& b){
-    int temp = a;
+void swap (int& a, int& b) {
+    int c = a;
     a = b;
-    b = temp;
+    b = c;
 }
-void cocktail(std::vector<int>& vec, int a) {
-    std::vector<int> c;
-    c = vec;
-    std::cout<< "\nVector but with Cocktail sort: " << std::endl;
-    std::sort(c.begin(),c.end());
-    for (int i=0; i<a; i++)
-        std::cout << c[i]<< " ";
-}
-void quick(std::vector<int>& vec, int a) {
-    std::vector <int> b = vec;
-    std::vector <int> c;
-    std::vector <int> d;
-    for (int i = 0; i<b.size();i++) {
-        if (b[i] > b[b.size()-1]) {
-            c.push_back(b[i]);
-       }
-        if (b[i] <= b[b.size()-1])
-           d.push_back(b[i]);
+
+void cocktail (vector<int>& vec) {  //аналогично бабл сорту, только в две стороны
+    int left = 0;
+    int right = vec.size()-1;
+    int size = vec.size();
+    do {
+        for (int i = left; i < right; i++) {
+           if (vec[i] > vec[i+1])
+               swap (vec[i], vec[i+1]);
+           size = i;
+        }
+        right = size;
+        for (int i = right; i > left; i--) {
+            if (vec[i] < vec[i-1])
+                swap(vec[i], vec[i-1]);
+            size = i;
+        }
+        left = size;
     }
-    std::cout << "\nVector but with Quick sort: " << std::endl;
-    for (int o = 0; o < d.size();o++)
-        std::cout << d[o] << " ";
-    for (int g = 0; g < c.size();g++)
-        std::cout << c[g] << " ";
+    while (left < right);
 }
 
-
-void bitonicSeqMerge(std::vector<int>& vec, int first, int second, bool flag) {
-    if (second % 2 != 0) {
-std::cout << "Massive can't be sorted with Bitonic sort, please, rerun the program." << std::endl;
-return;
+void quick (vector<int>& vec, int first, int last) { // функция берет последний элемент как поворотный
+    int pivot = vec[vec.size()-1];                      // все меньшие элементы перекидывает налево
+    int i = first - 1;                                  // все большие направо от него
+    for (int j = first; j <= last - 1; j++) {
+        if (vec[j] <= pivot) {
+            i++;
+            swap(vec[i], vec[j]);
+        }
     }
-    for (int i = 0; i <= (second - first) / 2; i++) {
+    swap(vec[i + 1], vec[last]);
+}
 
+
+void merge (vector<int>& vec, int first, int last, bool flag) {
+    if (first == last)
+        return;
+    for (int i = 0; i <= (last - first) / 2; i++) {
+        if (flag) {
+            if (vec[first + i] > vec[(first + last) / 2 + i + 1])
+                swap(vec[first + i], vec[(first + last) / 2 + i + 1]);
+        } else {
+            if (vec[first + i] < vec[(first + last) / 2 + i + 1]) {
+                swap(vec[first + i], vec[(first + last) / 2 + i + 1]);
+            }
+        }
     }
+    merge(vec, first, (last + first) / 2, flag);
+    merge(vec, (last + first) / 2 + 1, last, flag);
 }
 
-void BitonicSort(std::vector<int>& vec, int first, int second, bool flag) {
-
+void bitonic (vector<int>& vec, int first, int last, bool flag) {
+    if (first == last)
+        return;
+    bitonic(vec, first, (first+last)/2, true);
+    bitonic(vec, (first+last)/2 + 1, last,  false);
+    merge (vec, first, last, flag);
 }
-
+void print(vector <int>& vec) {
+    for (int i = 0; i < vec.size(); i++)
+        cout << vec[i] << " ";
+    cout << std::endl;
+}
 
 int main() {
+    string s;
     int a;
-    std::cout << "\nEnter your length, and if you want to see bitonic sort, please, enter even number of elements: " << std::endl;
-    std::cin >> a;
-    std::vector <int> vec (a);
-    std::srand(std::time(nullptr));
-    std::cout<< "\nYour random vector is:"<<std::endl;
-    for (int i=0; i<a; i++) {
-        vec[i] = std::rand()%201-100;
-        std::cout << vec[i]<< " ";
+    cout << "\nEnter your length, and if you want to see bitonic sort, please, enter even number of elements: "
+              << endl;
+    cin >> a;
+    vector<int> vec(a);
+    srand(std::time(nullptr));
+    cout << "\nYour random vector is:" << std::endl;
+    for (int i = 0; i < a; i++) {
+        vec[i] = rand() % 201 - 100;
+        cout << vec[i] << " ";
     }
-    std::cout<< std::endl;
-    cocktail(vec, a);
-    quick(vec, a);
-    //bitonicSeqMerge (vec, a);
-    BitonicSort(vec, 0, a, 1);
+    cout << std::endl;
+
+    cocktail(vec);
+    cout << "Your vector with cocktail sort: \n";
+    print(vec);
+    cout << endl;
+
+    quick(vec, 0, vec.size()-1);
+    cout << "Your vector with quick sort: \n";
+    print(vec);
+    cout << endl;
+
+    bitonic(vec, 0, 15, true);
+    cout << "Your vector with bitonic sort: \n";
+    print(vec);
+    cout << endl;
+
     return 0;
 }
